@@ -1,5 +1,28 @@
 # Release – Resumo das alterações
 
+## Novo produto: Porta
+
+O aplicativo passa a oferecer orçamento para **portas**, no mesmo fluxo dos demais produtos: escolha do produto na tela inicial, preenchimento do orçamento, dados do cliente, confirmação e geração do PDF.
+
+### O que pode ser orçado
+- **Modelo da porta:** Boiserie, Boiserie e Ferro Forjado, Ferro Forjado, Bandeja, Aço Corten, Lisa.
+- **Modo de puxador:** Puxador Cava ou Puxador Sobrepor no Metalon 40x20 (em alguns modelos a opção é definida automaticamente).
+- **Sistema de abertura:** Pivotante, De Correr ou Com Dobradiça.
+- **Estilo de folha:** Folha Única ou Folha Dupla.
+- **Acondicionamento** (quando aplicável): Almofadada ou Bandeja Simples.
+- **Itens complementares:** Bandeirola e/ou Alizar (opcionais).
+- **Pintura:** Pintura Automotiva (com escolha de cor), Pintura Corten, Aço Corten ou Primer Dupla Função (com escolha de cor). As cores podem ser escolhidas por tom (Preto, Branco, Azul) ou “Outra”, informando o nome da cor.
+- **Modo de entrega:** Instalado no Local ou Retirada na Empresa.
+
+### Dados do orçamento
+- Valor por m², medidas da porta (altura × largura) e, se houver, medidas da bandeirola e do alizar.
+- Custo de deslocamento (com opção “Sem custo”).
+- Campo opcional de descrição adicional para o orçamento.
+
+O PDF do orçamento de Porta é gerado com o mesmo padrão dos outros produtos, usando a planilha específica de proposta de Porta.
+
+---
+
 ## Melhorias nos formulários de orçamento
 
 Ajustes visuais nos formulários de todos os produtos (Cobertura Premium, Pergolado, Cobertura Retrátil e Porta) para deixar a tela mais clara e organizada.
