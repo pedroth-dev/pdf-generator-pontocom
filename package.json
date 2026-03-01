@@ -1,7 +1,7 @@
 {
   "name": "pdf-generator",
   "private": true,
-  "version": "2.4.2",
+  "version": "3.5.3",
   "main": "dist-electron/main.js",
   "scripts": {
     "dev": "vite --config config/vite.config.ts",
