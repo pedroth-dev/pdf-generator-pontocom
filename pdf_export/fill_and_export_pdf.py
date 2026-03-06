@@ -168,14 +168,21 @@ def build_texto_especificacao_d43(data: dict) -> str:
 def build_texto_especificacao_d43_retratil(data: dict) -> str:
     """
     Monta o texto de especificação D43 para Cobertura Retrátil.
-    - Telha Térmica: template com cor parte superior/inferior; linha do modo de abertura só se Automatizada.
-    - Policarbonato: template com material; linha do modo de abertura só se Automatizada.
+    - Telha Térmica: template com cor parte superior/inferior; linha do modo de abertura só se NÃO Automatizada.
+    - Policarbonato: template com material; linha do modo de abertura só se NÃO Automatizada.
+    - Evita duplicar a palavra "medidas" quando data["medidas"] já vem com prefixo "medidas ".
     """
     tipo = (data.get("tipoCobertura") or "").strip()
-    medidas = (data.get("medidas") or "").strip()
+    medidas_raw = (data.get("medidas") or "").strip()
+    # Evitar "medidas: medidas ..." na linha 1: usar só o restante se já vier com prefixo "medidas "
+    if medidas_raw.lower().startswith("medidas "):
+        medidas_display = medidas_raw[8:].strip()
+    else:
+        medidas_display = medidas_raw
     modo_abertura = (data.get("modoAbertura") or "").strip()
     is_automatizada = modo_abertura == "Automatizada"
-    sufixo_modo = "\n\nCobertura com modo de abertura [Modo de Abertura]\n" if is_automatizada else ""
+    # Frase do modo de abertura só quando NÃO for Automatizada (retirar quando for Automatizada).
+    sufixo_modo = "\n\nCobertura com modo de abertura [Modo de Abertura]\n" if not is_automatizada else ""
 
     if tipo == "Telha Térmica":
         template = (
@@ -187,11 +194,11 @@ def build_texto_especificacao_d43_retratil(data: dict) -> str:
         cor_superior = (data.get("corParteSuperior") or "").strip().lower()
         cor_inferior = (data.get("corParteInferior") or "").strip().lower()
         texto = (
-            template.replace("[Medidas]", medidas)
+            template.replace("[Medidas]", medidas_display)
             .replace("[Cor da Parte Superior]", cor_superior)
             .replace("[Cor da Parte Inferior]", cor_inferior)
         )
-        if is_automatizada:
+        if not is_automatizada:
             texto += sufixo_modo.replace("[Modo de Abertura]", modo_abertura.strip().lower())
         return texto
 
@@ -206,8 +213,8 @@ def build_texto_especificacao_d43_retratil(data: dict) -> str:
         "Cobertura metálica retrátil sendo uma folha de abrir e outra fixa com [material], "
         "tendo calha e rufo. Acabamento na parte metálica sendo pintura automotiva cor preto fosco."
     )
-    texto = template.replace("[Medidas]", medidas).replace("[material]", material)
-    if is_automatizada:
+    texto = template.replace("[Medidas]", medidas_display).replace("[material]", material)
+    if not is_automatizada:
         texto += sufixo_modo.replace("[Modo de Abertura]", modo_abertura.strip().lower())
     return texto
 
@@ -233,18 +240,18 @@ def build_texto_especificacao_d43_porta(data: dict) -> str:
     pintura = (data.get("corPintura") or "").strip().lower()
     modo_entrega = _(data.get("modoEntrega") or "")
 
-    # Linha 1: Porta [Modelo], [Modo Puxador], [Medidas da Porta Geral].
-    linha1 = f"Porta {modelo}, {modo_puxador}, {medidas_geral}."
+    # Linha 1: Porta modelo [Modelo]. Medida total: [Medidas geral].
+    linha1 = f"Porta modelo {modelo}. Medida total: {medidas_geral}."
 
-    # Linha 2: Porta: [Medidas], [Sistema], [Estilo]. [Acondicionamento]. Fabricada em chapa [Espessura].
+    # Linha 2: Porta: [Modo Puxador], [Sistema], [Estilo] [, Acondicionamento]. Fabricada em chapa [Espessura]. [Medidas porta].
     # Para Ferro Forjado e Aço Corten: sem [Acondicionamento].
     modelo_raw = (data.get("modeloPorta") or "").strip()
     sem_acondicionamento_na_linha = modelo_raw in ("Ferro Forjado", "Aço Corten")
     if sem_acondicionamento_na_linha:
-        linha2 = f"Porta: {medidas_porta}, {sistema}, {estilo}. Fabricada em chapa {espessura}."
+        linha2 = f"Porta: {modo_puxador}, {sistema}, {estilo}. Fabricada em chapa {espessura}. {medidas_porta}."
     else:
-        parte_acond = f" {acond}." if acond else ""
-        linha2 = f"Porta: {medidas_porta}, {sistema}, {estilo}.{parte_acond} Fabricada em chapa {espessura}."
+        parte_acond = f", {acond}" if acond else ""
+        linha2 = f"Porta: {modo_puxador}, {sistema}, {estilo}{parte_acond}. Fabricada em chapa {espessura}. {medidas_porta}."
 
     linhas = [linha1, "", linha2]
 
@@ -625,8 +632,11 @@ def main() -> int:
         raw = (data.get("m2Direto") or "").strip()
         if raw:
             valor_m2 = parse_m2_direto(raw)
-            # Formato brasileiro para planilha: "25,50 metros quadrados"
-            data["medidas"] = f"{valor_m2:.2f}".replace(".", ",") + " metros quadrados"
+            # Cobertura Premium: "25,50 m²"; demais propostas: "25,50 metros quadrados"
+            if data.get("tipoProposta") == "cobertura":
+                data["medidas"] = f"{valor_m2:.2f}".replace(".", ",") + " m²"
+            else:
+                data["medidas"] = f"{valor_m2:.2f}".replace(".", ",") + " metros quadrados"
     else:
         # area_unica: prefixar com "medidas " o valor já vindo no payload
         med = (data.get("medidas") or "").strip()
@@ -810,10 +820,10 @@ def main() -> int:
                 pass
             # Negrito nos cabeçalhos da descrição Porta
             try:
-                # Primeira linha: "Porta [modelo]" (até a primeira vírgula)
-                idx_comma = texto_d43_excel.find(",")
-                if idx_comma >= 0:
-                    cell_d43.characters[0:idx_comma].font.bold = True
+                # Primeira linha inteira em negrito
+                primeira_linha = texto_d43_excel.split("\r\n")[0]
+                if primeira_linha:
+                    cell_d43.characters[0 : len(primeira_linha)].font.bold = True
                 for cabecalho in ("Porta:", "Bandeirola:", "Alizar:", "Acabamento:", "Incluso:", "Não incluso:"):
                     pos = texto_d43_excel.find(cabecalho)
                     if pos >= 0:

@@ -44,10 +44,14 @@ export type CorPinturaPorta =
   | 'Branco Brilhoso'
   | 'Azul Fosco'
   | 'Azul Brilhoso'
+  | 'Cinza Fosco'
+  | 'Cinza Brilhoso'
+  | 'Grafite Fosco'
+  | 'Grafite Brilhoso'
   | 'Outra'
   | null;
 
-export type ModoEntrega = 'Instalado no Local' | 'Retirada na Empresa' | null;
+export type ModoEntrega = 'Instalada no Local' | 'Retirada na Empresa' | null;
 
 /** Espessura da chapa por modelo (valor fixo, não editável) */
 export const ESPESSURA_CHAPA_POR_MODELO: Record<NonNullable<ModeloPorta>, string> = {
@@ -169,7 +173,7 @@ function portaReducer(state: PortaState, action: PortaAction): PortaState {
     case 'SET_MODELO': {
       const modelo = action.payload;
       const next = { ...state, modeloPorta: modelo };
-      if (modelo && modelo !== 'Lisa') {
+      if (modelo && modelo !== 'Lisa' && modelo !== 'Aço Corten') {
         next.modoPuxador = 'Puxador Sobrepor no Metalon 40x20';
       }
       if (modelo === 'Bandeja' && state.acondicionamento === null) {
@@ -283,7 +287,8 @@ export function PortaProvider({ children }: { children: ReactNode }) {
   const setFormTouched = useCallback((p: boolean) => dispatch({ type: 'SET_FORM_TOUCHED', payload: p }), []);
   const reset = useCallback(() => dispatch({ type: 'RESET' }), []);
 
-  const modoPuxadorLocked = state.modeloPorta !== null && state.modeloPorta !== 'Lisa';
+  const modoPuxadorLocked =
+    state.modeloPorta !== null && state.modeloPorta !== 'Lisa' && state.modeloPorta !== 'Aço Corten';
   const espessuraChapa = state.modeloPorta ? ESPESSURA_CHAPA_POR_MODELO[state.modeloPorta] : '';
   const acondicionamentoVisivel = state.modeloPorta === 'Bandeja';
   const acondicionamentoEfetivo = (() => {

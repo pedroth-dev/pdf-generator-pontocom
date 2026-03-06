@@ -49,7 +49,7 @@ const PINTURA_OPCOES = [
 ] as const;
 
 const MODO_ENTREGA_OPCOES = [
-  { value: 'Instalado no Local', label: 'Instalado no Local' },
+  { value: 'Instalada no Local', label: 'Instalada no Local' },
   { value: 'Retirada na Empresa', label: 'Retirada na Empresa' },
 ] as const;
 
@@ -186,9 +186,9 @@ export function PortaScreen({ onBack, onConfirm }: PortaScreenProps) {
         ) : (
           <StepButtons
             options={[...MODO_PUXADOR_OPCOES]}
-            value={modeloPorta === 'Lisa' ? modoPuxador : null}
+            value={modeloPorta === 'Lisa' || modeloPorta === 'Aço Corten' ? modoPuxador : null}
             onChange={(v) => setModoPuxador(v as typeof modoPuxador)}
-            disabled={modeloPorta !== 'Lisa'}
+            disabled={modeloPorta !== 'Lisa' && modeloPorta !== 'Aço Corten'}
           />
         )}
       </div>
@@ -271,6 +271,7 @@ export function PortaScreen({ onBack, onConfirm }: PortaScreenProps) {
               corOutra={corPinturaOutra}
               onValueChange={setCorPintura}
               onCorOutraChange={setCorPinturaOutra}
+              pinturaPorta={pinturaPorta ?? undefined}
               id="porta-cor"
               error={formTouched && precisaCor && !corOk ? 'Selecione ou informe a cor.' : undefined}
             />

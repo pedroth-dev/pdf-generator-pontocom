@@ -1,6 +1,6 @@
-import type { CorPinturaPorta } from '../context/PortaContext';
+import type { CorPinturaPorta, PinturaPorta } from '../context/PortaContext';
 
-/** Grupos por tom: Preto, Branco, Azul. Cada grupo tem Fosco (flat) e Brilhoso (com highlight). */
+/** Grupos por tom: Preto, Branco, Azul (Pintura Automotiva). Cada grupo tem Fosco e Brilhoso. */
 const GRUPOS_COR: {
   tone: string;
   swatches: { value: Exclude<CorPinturaPorta, 'Outra' | null>; label: string; hex: string; brilhoso: boolean }[];
@@ -28,11 +28,41 @@ const GRUPOS_COR: {
   },
 ];
 
+/** Grupos para Primer Dupla Função (cor): Preto, Cinza, Grafite. Cada um com Fosco e Brilhoso. */
+const GRUPOS_COR_PRIMER: {
+  tone: string;
+  swatches: { value: Exclude<CorPinturaPorta, 'Outra' | null>; label: string; hex: string; brilhoso: boolean }[];
+}[] = [
+  {
+    tone: 'Preto',
+    swatches: [
+      { value: 'Preto Fosco', label: 'Fosco', hex: '#2d2d2d', brilhoso: false },
+      { value: 'Preto Brilhoso', label: 'Brilhoso', hex: '#1a1a1a', brilhoso: true },
+    ],
+  },
+  {
+    tone: 'Cinza',
+    swatches: [
+      { value: 'Cinza Fosco', label: 'Fosco', hex: '#6b7280', brilhoso: false },
+      { value: 'Cinza Brilhoso', label: 'Brilhoso', hex: '#9ca3af', brilhoso: true },
+    ],
+  },
+  {
+    tone: 'Grafite',
+    swatches: [
+      { value: 'Grafite Fosco', label: 'Fosco', hex: '#374151', brilhoso: false },
+      { value: 'Grafite Brilhoso', label: 'Brilhoso', hex: '#4b5563', brilhoso: true },
+    ],
+  },
+];
+
 interface SeletorCorPinturaProps {
   value: CorPinturaPorta;
   corOutra: string;
   onValueChange: (v: CorPinturaPorta) => void;
   onCorOutraChange: (v: string) => void;
+  /** Define o conjunto de cores: Automotiva (Preto/Branco/Azul) ou Primer (Preto/Cinza/Grafite). */
+  pinturaPorta?: PinturaPorta;
   id?: string;
   error?: string;
 }
@@ -84,17 +114,20 @@ export function SeletorCorPintura({
   corOutra,
   onValueChange,
   onCorOutraChange,
+  pinturaPorta,
   id,
   error,
 }: SeletorCorPinturaProps) {
+  const isPrimer = pinturaPorta === 'Primer Dupla Função (cor)';
+  const grupos = isPrimer ? GRUPOS_COR_PRIMER : GRUPOS_COR;
+
   return (
     <div className="flex flex-col gap-4">
       <p className="text-sm font-semibold text-white uppercase tracking-wider">
         Escolha a cor
       </p>
-      {/* 3 grupos lado a lado: Preto, Branco, Azul. Cada um com label em cima e Fosco/Brilhoso abaixo. */}
       <div className="grid grid-cols-3 gap-8">
-        {GRUPOS_COR.map((grupo) => (
+        {grupos.map((grupo) => (
           <div key={grupo.tone} className="flex flex-col items-center gap-2">
             <span className="text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wider">
               {grupo.tone}
